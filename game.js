@@ -20,6 +20,7 @@ class HanoiGame {
         this.timerInterval = null;
         this.isAutoSolving = false;
         this.moveQueue = [];
+        this.timerSpeed = 10; // Default timer update speed in ms
 
         // Create randomized disk arrangement
         const disks = [1, 2, 3, 4, 5];
@@ -59,21 +60,38 @@ class HanoiGame {
         const speedValue = document.getElementById('speedValue');
         speedSlider.addEventListener('input', () => {
             speedValue.textContent = speedSlider.value;
+            this.updateSpeeds(speedSlider.value);
         });
     }
 
-    startTimer() {
-        if (!this.startTime) {
-            this.startTime = Date.now();
-            this.timerInterval = setInterval(() => {
-                const elapsed = Date.now() - this.startTime;
-                const milliseconds = Math.floor((elapsed % 1000) / 10).toString().padStart(2, '0');
-                const seconds = Math.floor(elapsed / 1000) % 60;
-                const minutes = Math.floor(elapsed / 60000);
-                document.getElementById('timer').textContent = 
-                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${milliseconds}`;
-            }, 10); // Update every 10ms for smoother display
+    updateSpeeds(speed) {
+        // Update both timer and auto-solve speeds
+        this.timerSpeed = Math.max(1, 20 - (speed * 2)); // Adjust timer speed (20ms to 1ms)
+        
+        // Restart timer with new speed if it's running
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.startTimer(true); // true means preserve existing start time
         }
+    }
+
+    startTimer(preserveStartTime = false) {
+        if (!preserveStartTime) {
+            this.startTime = Date.now();
+        }
+        
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
+
+        this.timerInterval = setInterval(() => {
+            const elapsed = Date.now() - this.startTime;
+            const milliseconds = Math.floor((elapsed % 1000) / 10).toString().padStart(2, '0');
+            const seconds = Math.floor(elapsed / 1000) % 60;
+            const minutes = Math.floor(elapsed / 60000);
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${milliseconds}`;
+        }, this.timerSpeed);
     }
 
     stopTimer() {
@@ -154,11 +172,16 @@ class HanoiGame {
 
     showWinMessage() {
         const timeStr = document.getElementById('timer').textContent;
+        const resetBtn = document.getElementById('resetBtn');
+        
+        resetBtn.textContent = 'New Game';
+        resetBtn.classList.add('game-complete');
+        
         setTimeout(() => {
             alert(`Congratulations! You've completed the Tower of Hanoi!\n\n` +
                   `Moves: ${this.moves}\n` +
                   `Time: ${timeStr}\n\n` +
-                  `Click Reset to play again!`);
+                  `Click New Game to play again!`);
         }, 100);
     }
 
@@ -305,6 +328,10 @@ class HanoiGame {
     }
 
     resetGame() {
+        const resetBtn = document.getElementById('resetBtn');
+        resetBtn.textContent = 'Reset Game';
+        resetBtn.classList.remove('game-complete');
+        
         this.isAutoSolving = false;
         this.moveQueue = [];
         document.getElementById('autoSolveBtn').disabled = false;
