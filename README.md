@@ -1,3 +1,3 @@
 # Hanoi Viz
 
-Early Tower of Hanoi visualizer.
+Styled mid-iteration Hanoi viz.

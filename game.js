@@ -18,6 +18,8 @@ class HanoiGame {
         this.selectedTower = null;
         this.startTime = null;
         this.timerInterval = null;
+        this.isAutoSolving = false;
+        this.moveQueue = [];
 
         // Create randomized disk arrangement
         const disks = [1, 2, 3, 4, 5];
@@ -46,6 +48,21 @@ class HanoiGame {
         // Reset button
         document.getElementById('resetBtn').addEventListener('click', () => {
             this.resetGame();
+        });
+
+        // Auto solve button
+        document.getElementById('autoSolveBtn').addEventListener('click', () => {
+            if (!this.isAutoSolving) {
+                document.querySelector('.speed-control').classList.add('visible');
+                this.startAutoSolve();
+            }
+        });
+
+        // Speed slider
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        speedSlider.addEventListener('input', () => {
+            speedValue.textContent = speedSlider.value;
         });
     }
 
@@ -165,12 +182,73 @@ class HanoiGame {
             this.towers[towerName].disks.forEach(diskSize => {
                 const diskElement = document.createElement('div');
                 diskElement.className = `disk disk-${diskSize}`;
+                diskElement.textContent = diskSize;  // Add this line to show the disk number
                 disksContainer.appendChild(diskElement);
             });
         });
     }
 
+    async startAutoSolve() {
+        if (this.isAutoSolving) return;
+        this.isAutoSolving = true;
+        document.getElementById('autoSolveBtn').disabled = true;
+        document.getElementById('resetBtn').disabled = false;
+
+        this.moveQueue = [];
+        
+        // Get the starting tower that has all disks
+        const sourceTower = ['A', 'B', 'C'].find(tower => 
+            this.towers[tower].disks.length === 5
+        );
+
+        // Calculate optimal moves
+        this.solveTower(5, sourceTower, 'C', 'B');
+
+        // Execute moves
+        while (this.moveQueue.length > 0 && this.isAutoSolving) {
+            const move = this.moveQueue.shift();
+            this.selectTower(move.from);
+            await this.delay(this.getDelay());
+            if (!this.isAutoSolving) break;
+            this.selectTower(move.to);
+            await this.delay(this.getDelay());
+        }
+
+        this.isAutoSolving = false;
+        document.getElementById('autoSolveBtn').disabled = false;
+    }
+
+    solveTower(n, from, to, aux) {
+        if (n === 1) {
+            this.moveQueue.push({ from, to });
+            return;
+        }
+        
+        this.solveTower(n - 1, from, aux, to);
+        this.moveQueue.push({ from, to });
+        this.solveTower(n - 1, aux, to, from);
+    }
+
+    getDelay() {
+        const speed = document.getElementById('speedSlider').value;
+        return 1100 - (speed * 100); // 1000ms to 100ms
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     resetGame() {
+        // Stop auto-solve first
+        this.isAutoSolving = false;
+        this.moveQueue = [];
+        
+        // ...existing code...
+        this.isAutoSolving = false;
+        this.moveQueue = [];
+        document.getElementById('autoSolveBtn').disabled = false;
+        document.getElementById('resetBtn').disabled = false;
+        document.querySelector('.speed-control').classList.remove('visible');
         this.towers = {
             'A': new Tower('A'),
             'B': new Tower('B'),
