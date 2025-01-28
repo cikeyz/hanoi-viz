@@ -16,11 +16,6 @@
                 <p class="subtitle">A Recursive Challenge</p>
             </div>
             
-            <div class="stats">
-                <div class="timer">Time: <span id="timer">0:00</span></div>
-                <div class="moves">Moves: <span id="moves">0</span></div>
-            </div>
-
             <!-- Game Board -->
             <div class="game-container">
                 <div class="tower" id="towerA">
@@ -46,27 +41,39 @@
             <!-- Game Controls -->
             <div class="controls">
                 <button id="resetBtn" class="control-btn">Reset Game</button>
-                <button id="autoSolveBtn" class="control-btn">Auto Solve</button>
-                <div class="speed-control">
-                    <label for="speedSlider">Speed:</label>
-                    <input type="range" id="speedSlider" min="1" max="10" value="5">
-                    <span id="speedValue">5</span>
+                <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                    <button id="autoSolveBtn" class="control-btn">Auto Solve</button>
+                    <div class="speed-control">
+                        <label for="speedSlider">Speed:</label>
+                        <input type="range" id="speedSlider" min="1" max="10" value="5">
+                        <span id="speedValue">5</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- History Section -->
-        <div class="history-container">
-            <h3>Move History</h3>
-            <div class="history" id="moveHistory"></div>
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div class="stats-container">
+                <div class="stats">
+                    <div class="timer">Time: <span id="timer">00:00.00
+                        
+                    </span></div>
+                    <div class="moves">Moves: <span id="moves">0</span></div>
+                </div>
+            </div>
+            <div class="history-container">
+                <h3>Move History</h3>
+                <div class="history" id="moveHistory"></div>
 
-            <!-- Theme Toggle -->
-            <div class="mode-switch">
-                <label class="switch">
-                    <input type="checkbox" id="theme-toggle">
-                    <span class="slider"></span>
-                </label>
-                <span>Dark Mode</span>
+                <!-- Theme Toggle -->
+                <div class="mode-switch">
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Dark Mode</span>
+                </div>
             </div>
         </div>
     </div>

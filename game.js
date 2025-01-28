@@ -38,19 +38,16 @@ class HanoiGame {
     }
 
     initializeDOM() {
-        // Add click listeners to towers
         ['A', 'B', 'C'].forEach(tower => {
             document.getElementById(`tower${tower}`).addEventListener('click', () => {
                 this.selectTower(tower);
             });
         });
 
-        // Reset button
         document.getElementById('resetBtn').addEventListener('click', () => {
             this.resetGame();
         });
 
-        // Auto solve button
         document.getElementById('autoSolveBtn').addEventListener('click', () => {
             if (!this.isAutoSolving) {
                 document.querySelector('.speed-control').classList.add('visible');
@@ -58,7 +55,6 @@ class HanoiGame {
             }
         });
 
-        // Speed slider
         const speedSlider = document.getElementById('speedSlider');
         const speedValue = document.getElementById('speedValue');
         speedSlider.addEventListener('input', () => {
@@ -70,12 +66,13 @@ class HanoiGame {
         if (!this.startTime) {
             this.startTime = Date.now();
             this.timerInterval = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
-                document.getElementById('timer').textContent =
-                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            }, 1000);
+                const elapsed = Date.now() - this.startTime;
+                const milliseconds = Math.floor((elapsed % 1000) / 10).toString().padStart(2, '0');
+                const seconds = Math.floor(elapsed / 1000) % 60;
+                const minutes = Math.floor(elapsed / 60000);
+                document.getElementById('timer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${milliseconds}`;
+            }, 10); // Update every 10ms for smoother display
         }
     }
 
@@ -103,7 +100,7 @@ class HanoiGame {
             this.moves++;
             document.getElementById('moves').textContent = this.moves;
 
-            const moveText = `Move disk ${disk} from Tower ${fromTower} to Tower ${toTower}`;
+            const moveText = `${this.moves}. Disk ${disk}: Tower ${fromTower}→Tower ${toTower}`;
             this.moveHistory.push(moveText);
             this.updateMoveHistory();
 
@@ -182,11 +179,95 @@ class HanoiGame {
             this.towers[towerName].disks.forEach(diskSize => {
                 const diskElement = document.createElement('div');
                 diskElement.className = `disk disk-${diskSize}`;
-                diskElement.textContent = diskSize;  // Add this line to show the disk number
+                diskElement.textContent = diskSize;
                 disksContainer.appendChild(diskElement);
             });
         });
     }
+
+    // ---- Begin BFS Implementation ----
+    cloneTowersDistribution() {
+        return {
+            'A': [...this.towers['A'].disks],
+            'B': [...this.towers['B'].disks],
+            'C': [...this.towers['C'].disks]
+        };
+    }
+
+    getKey(distribution) {
+        // Create a string representation so we can store visited states in a Set
+        // Example: A:[3,2],B:[1],C:[] => "A|3,2|B|1|C|"
+        return ['A','B','C'].map(t => {
+            return `${t}|${distribution[t].join(',')}`;
+        }).join('|');
+    }
+
+    isGoalDistribution(distribution) {
+        // Check if tower C has [5,4,3,2,1]
+        if (distribution['C'].length !== 5) return false;
+        return JSON.stringify(distribution['C']) === '[5,4,3,2,1]';
+    }
+
+    getNextStates(distribution, pathSoFar) {
+        // All valid single-disk moves from distribution
+        const result = [];
+        const towers = ['A','B','C'];
+        for (let from of towers) {
+            if (!distribution[from].length) continue;
+            const fromTop = distribution[from][distribution[from].length - 1];
+            for (let to of towers) {
+                if (from === to) continue;
+                const toTop = distribution[to][distribution[to].length - 1];
+                // Valid if to is empty or fromTop < toTop
+                if (!distribution[to].length || fromTop < toTop) {
+                    // Clone distribution
+                    const newDist = {
+                        'A': [...distribution['A']],
+                        'B': [...distribution['B']],
+                        'C': [...distribution['C']]
+                    };
+                    // Move disk
+                    newDist[from].pop();
+                    newDist[to].push(fromTop);
+                    const newMove = { from, to };
+                    result.push({
+                        distribution: newDist,
+                        moves: [...pathSoFar, newMove]
+                    });
+                }
+            }
+        }
+        return result;
+    }
+
+    runBFS() {
+        const startDist = this.cloneTowersDistribution();
+        if (this.isGoalDistribution(startDist)) return [];
+
+        const visited = new Set();
+        const queue = [];
+        queue.push({ distribution: startDist, moves: [] });
+        visited.add(this.getKey(startDist));
+
+        while (queue.length > 0) {
+            const current = queue.shift();
+            if (this.isGoalDistribution(current.distribution)) {
+                // Found a solution
+                return current.moves;
+            }
+            // Get neighbors
+            const nextStates = this.getNextStates(current.distribution, current.moves);
+            for (let next of nextStates) {
+                const key = this.getKey(next.distribution);
+                if (!visited.has(key)) {
+                    visited.add(key);
+                    queue.push(next);
+                }
+            }
+        }
+        return [];
+    }
+    // ---- End BFS Implementation ----
 
     async startAutoSolve() {
         if (this.isAutoSolving) return;
@@ -195,16 +276,12 @@ class HanoiGame {
         document.getElementById('resetBtn').disabled = false;
 
         this.moveQueue = [];
-        
-        // Get the starting tower that has all disks
-        const sourceTower = ['A', 'B', 'C'].find(tower => 
-            this.towers[tower].disks.length === 5
-        );
 
-        // Calculate optimal moves
-        this.solveTower(5, sourceTower, 'C', 'B');
+        // Run BFS to find a solution path
+        const path = this.runBFS();
+        this.moveQueue = path;
 
-        // Execute moves
+        // Execute BFS moves
         while (this.moveQueue.length > 0 && this.isAutoSolving) {
             const move = this.moveQueue.shift();
             this.selectTower(move.from);
@@ -218,20 +295,9 @@ class HanoiGame {
         document.getElementById('autoSolveBtn').disabled = false;
     }
 
-    solveTower(n, from, to, aux) {
-        if (n === 1) {
-            this.moveQueue.push({ from, to });
-            return;
-        }
-        
-        this.solveTower(n - 1, from, aux, to);
-        this.moveQueue.push({ from, to });
-        this.solveTower(n - 1, aux, to, from);
-    }
-
     getDelay() {
         const speed = document.getElementById('speedSlider').value;
-        return 1100 - (speed * 100); // 1000ms to 100ms
+        return 1100 - (speed * 100);
     }
 
     delay(ms) {
@@ -239,11 +305,6 @@ class HanoiGame {
     }
 
     resetGame() {
-        // Stop auto-solve first
-        this.isAutoSolving = false;
-        this.moveQueue = [];
-        
-        // ...existing code...
         this.isAutoSolving = false;
         this.moveQueue = [];
         document.getElementById('autoSolveBtn').disabled = false;
@@ -265,7 +326,7 @@ class HanoiGame {
         this.startTime = null;
         
         document.getElementById('moves').textContent = '0';
-        document.getElementById('timer').textContent = '0:00';
+        document.getElementById('timer').textContent = '00:00.00';
         document.getElementById('moveHistory').innerHTML = '';
         
         this.stopTimer();

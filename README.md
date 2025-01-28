@@ -1,3 +1,3 @@
 # Hanoi Viz
 
-Styled mid-iteration Hanoi viz.
+Logic and UI expansion.

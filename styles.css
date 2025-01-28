@@ -96,7 +96,6 @@ body {
 /* Title Styling */
 h1 {
     text-align: center;
-    margin: var(--spacing-lg) 0;
     font-size: min(2.0em, 5vw);
     font-weight: 900;
     text-transform: uppercase;
@@ -110,25 +109,100 @@ h1 {
     -webkit-text-fill-color: transparent;
 }
 
-/* Stats Section */
+/* Remove or comment out the old .stats styling */
+
+/* History Container */
+.history-container {
+    background: var(--frame-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    box-shadow: var(--shadow-raised);
+    flex: 1;
+    /* Add max-height to match game container */
+    max-height: 525px;
+}
+
+.history-container h3 {
+    text-align: center;
+    color: var(--text-color);
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.history {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    background: var(--bg-color);
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--shadow-inner);
+    color: var(--text-color);
+    /* Set a fixed height that matches the game container minus padding and other elements */
+    height: calc(100% - 80px); /* Account for header and mode switch */
+    min-height: 200px;
+}
+
+/* Scrollbar styling */
+.history::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history::-webkit-scrollbar-track {
+    background: var(--bg-color);
+    border-radius: var(--border-radius-sm);
+}
+
+.history::-webkit-scrollbar-thumb {
+    background: var(--button-color);
+    border-radius: var(--border-radius-sm);
+    opacity: 0.8;
+}
+
+.history::-webkit-scrollbar-thumb:hover {
+    background: var(--button-hover);
+}
+
+[data-theme="dark"] .history::-webkit-scrollbar-track {
+    background: var(--frame-color);
+}
+
+/* Stats Container */
+.stats-container {
+    background: var(--frame-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    width: 300px;
+    margin-bottom: var(--spacing-xs);
+    box-shadow: var(--shadow-raised);
+}
+
 .stats {
     display: flex;
-    justify-content: center;
-    gap: var(--spacing-xl);
-    margin-bottom: var(--spacing-xl);
+    justify-content: space-between;
+    gap: var(--spacing-md);
     background: var(--bg-color);
-    padding: var(--spacing-md);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-inner);
+    padding: var(--spacing-sm);
 }
 
 .timer, .moves {
+    flex: 1;
+    text-align: center;
     background: var(--frame-color);
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--border-radius-sm);
     box-shadow: var(--shadow-raised);
     font-weight: 600;
     color: var(--text-color);
+    font-size: 0.85em;
+    min-width: 120px; /* Ensure enough space for milliseconds */
 }
 
 /* Game Board Layout */
@@ -136,7 +210,6 @@ h1 {
     display: flex;
     justify-content: center;
     gap: var(--spacing-xl);
-    flex: 1;
     margin: var(--spacing-md) 0;
     position: relative;
     background: var(--bg-color);
@@ -299,11 +372,15 @@ h1 {
 /* Controls Section */
 .controls {
     text-align: center;
-    margin: var(--spacing-xl) 0;
     background: var(--bg-color);
     padding: var(--spacing-md);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-inner);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    transition: var(--transition-main);
 }
 
 #resetBtn, #autoSolveBtn {
@@ -315,9 +392,10 @@ h1 {
     font-weight: 600;
     border-radius: var(--border-radius-sm);
     cursor: pointer;
-    transition: var(--transition-main);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     margin: 0 var(--spacing-md);
     box-shadow: var(--shadow-raised);
+    transform: translateX(0);
 }
 
 #autoSolveBtn {
@@ -338,96 +416,100 @@ h1 {
 
 /* Speed Control */
 .speed-control {
-    margin-top: var(--spacing-lg);
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-lg);
     opacity: 0;
-    height: 0;
+    max-width: 0;
+    padding: 0;
     overflow: hidden;
-    transition: var(--transition-main);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--frame-color);
-    padding: var(--spacing-md);
     border-radius: var(--border-radius-sm);
     box-shadow: var(--shadow-raised);
+    transform-origin: left;
+    border: none;
 }
 
 .speed-control.visible {
     opacity: 1;
-    height: 48px;
-    margin: var(--spacing-lg) 0;
+    max-width: 300px;
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--button-color);
+}
+
+.speed-control label {
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--frame-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 #speedSlider {
-    width: 200px;
-    margin: 0 var(--spacing-sm);
-    accent-color: var(--button-color);
+    width: 120px;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, 
+        var(--frame-color) 0%,
+        rgba(255, 255, 255, 0.7) 100%
+    );
+    border-radius: 2px;
+    outline: none;
+    opacity: 0.9;
+    transition: var(--transition-main);
 }
 
-/* History Container */
-.history-container {
+#speedSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
     background: var(--frame-color);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-lg);
-    width: 300px;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
+    cursor: pointer;
     box-shadow: var(--shadow-raised);
-    min-height: 100%;
+    transition: var(--transition-main);
+    border: none;
 }
 
-.history-container h3 {
-    text-align: center;
-    color: var(--text-color);
-    font-size: 0.85em;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: var(--spacing-md);
-}
-
-.history {
-    flex-grow: 1;
-    height: calc(100vh - 350px);
-    overflow-y: auto;
-    padding: var(--spacing-md);
-    background: var(--bg-color);
-    border-radius: var(--border-radius-sm);
-    box-shadow: var(--shadow-inner);
-    color: var(--text-color);
-}
-
-/* Scrollbar styling */
-.history::-webkit-scrollbar {
-    width: 6px;
-}
-
-.history::-webkit-scrollbar-track {
-    background: var(--bg-color);
-    border-radius: var(--border-radius-sm);
-}
-
-.history::-webkit-scrollbar-thumb {
-    background: var(--button-color);
-    border-radius: var(--border-radius-sm);
-    opacity: 0.8;
-}
-
-.history::-webkit-scrollbar-thumb:hover {
-    background: var(--button-hover);
-}
-
-[data-theme="dark"] .history::-webkit-scrollbar-track {
+#speedSlider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
     background: var(--frame-color);
+    cursor: pointer;
+    box-shadow: var(--shadow-raised);
+    transition: var(--transition-main);
+    border: none;
 }
 
-.history p {
-    margin: var(--spacing-xs) 0;
-    padding: var(--spacing-xs);
-    border-bottom: 1px solid var(--border-color);
-    font-size: 0.9em;
+#speedSlider:hover {
+    opacity: 1;
+}
+
+#speedSlider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-hover);
+}
+
+#speedSlider::-moz-range-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-hover);
+}
+
+#speedValue {
+    min-width: 24px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95em;
+    color: var(--frame-color);
+}
+
+/* Update dark theme specific styles */
+[data-theme="dark"] .speed-control.visible {
+    background: var(--button-color);
 }
 
 /* Disk colors using CSS variables */
@@ -460,7 +542,6 @@ h1 {
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-raised);
     border: 1px solid var(--border-color);
-    margin-bottom: var(--spacing-xl);
 }
 
 .subtitle {
@@ -559,14 +640,23 @@ input:checked + .slider:before {
         flex-direction: column;
     }
 
+    .stats-container,
     .history-container {
         width: 100%;
+    }
+
+    .stats-container {
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .history-container {
         margin-top: 0;
+        min-height: auto;
     }
 
     .history {
-        height: 200px;
-        max-height: 200px;
+        height: 200px; /* Fixed height for mobile */
+        min-height: 200px;
     }
 }
 
@@ -595,4 +685,37 @@ input:checked + .slider:before {
         font-size: 0.85em;
         padding: var(--spacing-xs) var(--spacing-md);
     }
+
+    .controls {
+        flex-direction: column;
+    }
+
+    .speed-control.visible {
+        max-width: 100%;
+        margin-top: var(--spacing-md);
+        justify-content: center;
+    }
+
+    #speedSlider {
+        width: 150px;
+    }
+
+    .stats {
+        padding: var(--spacing-sm);
+    }
+
+    .timer, .moves {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.85em;
+    }
+}
+
+/* Right Panel Layout */
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 300px;
+    /* Ensure the right panel takes appropriate height */
+    max-height: 100%;
 }
