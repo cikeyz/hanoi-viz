@@ -111,8 +111,8 @@ class HanoiGame {
 
         const diskToMove = sourceTower.disks[sourceTower.disks.length - 1];
 
-        if (!targetTower.disks.length ||
-            diskToMove < targetTower.disks[targetTower.disks.length - 1]) {
+        // Use recursive validation for manual moves
+        if (this.isValidMove(diskToMove, targetTower.disks)) {
             const disk = sourceTower.disks.pop();
             targetTower.disks.push(disk);
             this.moves++;
@@ -130,6 +130,27 @@ class HanoiGame {
             return true;
         }
         return false;
+    }
+
+    // New recursive validation method
+    isValidMove(diskToMove, targetDisks, index = targetDisks.length - 1) {
+        // Base case: if target is empty, move is valid
+        if (targetDisks.length === 0) {
+            return true;
+        }
+
+        // Base case: if we've checked all disks or found an invalid disk
+        if (index < 0) {
+            return true;
+        }
+
+        // If current disk is smaller than disk to move, invalid
+        if (targetDisks[index] < diskToMove) {
+            return false;
+        }
+
+        // Recursively check the disk above
+        return this.isValidMove(diskToMove, targetDisks, index - 1);
     }
 
     selectTower(tower) {
