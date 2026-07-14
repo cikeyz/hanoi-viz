@@ -7,13 +7,13 @@
 
 <p align="center">
   <a href="https://case-study-6-dsa-g3.vercel.app/">Live Demo</a>
-  &nbsp;·&nbsp;
+  &nbsp;&middot;&nbsp;
   <a href="https://cikeyz.github.io/hanoi-viz/">GitHub Pages</a>
-  &nbsp;·&nbsp;
+  &nbsp;&middot;&nbsp;
   <a href="#quick-start">Quick Start</a>
-  &nbsp;·&nbsp;
+  &nbsp;&middot;&nbsp;
   <a href="#project-structure">Structure</a>
-  &nbsp;·&nbsp;
+  &nbsp;&middot;&nbsp;
   <a href="#license">License</a>
 </p>
 
@@ -51,17 +51,17 @@ runs on the client.
 
 ## Quick Start
 
-`ash
+```bash
 git clone https://github.com/cikeyz/hanoi-viz.git
 cd hanoi-viz
 python -m http.server 8000
-`
+```
 
 Open http://127.0.0.1:8000/
 
 ## Project Structure
 
-`	ext
+```text
 hanoi-viz/
 ├── index.html
 ├── game.js
@@ -69,7 +69,7 @@ hanoi-viz/
 ├── LICENSE
 ├── README.md
 └── .gitignore
-`
+```
 
 ## Other experiments
 
